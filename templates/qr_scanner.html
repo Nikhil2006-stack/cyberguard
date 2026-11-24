@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}QR Code Security Scanner{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-light mb-1">
+            <i class="bi bi-qr-code-scan text-success me-2"></i>QR Code Security Scanner
+        </h2>
+        <p class="text-muted small mb-0">Quishing Defence, URL Inspection &amp; Safe Payload Dissection</p>
+    </div>
+    <span class="badge bg-dark border border-secondary text-success">
+        <i class="bi bi-shield-fill-check me-1"></i> Auto-Navigation Suppressed (Safe Preview)
+    </span>
+</div>
+
+<!-- Classroom Demonstration Pack: 3 Pre-Generated QRs -->
+<div class="cyber-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-light mb-0"><i class="bi bi-collection-play text-info me-2"></i>Classroom Demonstration QR Pack</h5>
+        <span class="badge bg-info text-dark">Ready for Smartphone Scanning</span>
+    </div>
+    <p class="text-muted small mb-3">
+        Classmates can scan these demonstration codes directly from the screen with their smartphones, or click "Test This QR" to evaluate the file directly.
+    </p>
+
+    <div class="row g-3">
+        <!-- 1. Legitimate Demonstration QR -->
+        <div class="col-md-4">
+            <div class="p-3 rounded bg-dark border border-secondary text-center h-100 d-flex flex-column">
+                <span class="badge bg-success mb-2 align-self-center">DEMO 1: LEGITIMATE PORTAL</span>
+                <div class="bg-white p-2 rounded d-inline-block mx-auto mb-2" style="width: 140px; height: 140px;">
+                    <img src="{{ url_for('serve_sample_qrs', filename='demo_legitimate_qr.png') }}" alt="Legitimate QR" class="img-fluid">
+                </div>
+                <div class="small text-light fw-bold mb-1">Official Student Services</div>
+                <div class="small text-muted mb-3 flex-grow-1">Points to institutional HTTPS domain.</div>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-sm btn-outline-success test-sample-qr-btn" data-type="legitimate">
+                        <i class="bi bi-play-circle me-1"></i> Test This QR
+                    </button>
+                    <a href="{{ url_for('serve_sample_qrs', filename='demo_legitimate_qr.png') }}" download class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Suspicious Phishing QR -->
+        <div class="col-md-4">
+            <div class="p-3 rounded bg-dark border border-secondary text-center h-100 d-flex flex-column">
+                <span class="badge bg-danger mb-2 align-self-center">DEMO 2: SIMULATED PHISHING</span>
+                <div class="bg-white p-2 rounded d-inline-block mx-auto mb-2" style="width: 140px; height: 140px;">
+                    <img src="{{ url_for('serve_sample_qrs', filename='demo_suspicious_qr.png') }}" alt="Suspicious QR" class="img-fluid">
+                </div>
+                <div class="small text-danger fw-bold mb-1">IP &amp; Port 8080 Lure</div>
+                <div class="small text-muted mb-3 flex-grow-1">Simulates Quishing attack with raw IP and urgency.</div>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-sm btn-outline-danger test-sample-qr-btn" data-type="suspicious">
+                        <i class="bi bi-play-circle me-1"></i> Test This QR
+                    </button>
+                    <a href="{{ url_for('serve_sample_qrs', filename='demo_suspicious_qr.png') }}" download class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Non-URL Classroom Flag QR -->
+        <div class="col-md-4">
+            <div class="p-3 rounded bg-dark border border-secondary text-center h-100 d-flex flex-column">
+                <span class="badge bg-primary mb-2 align-self-center">DEMO 3: NON-URL CTF TOKEN</span>
+                <div class="bg-white p-2 rounded d-inline-block mx-auto mb-2" style="width: 140px; height: 140px;">
+                    <img src="{{ url_for('serve_sample_qrs', filename='demo_non_url_qr.png') }}" alt="Non-URL QR" class="img-fluid">
+                </div>
+                <div class="small text-light fw-bold mb-1">Classroom Verification Flag</div>
+                <div class="small text-muted mb-3 flex-grow-1">Contains text string token, not an executable web link.</div>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-sm btn-outline-primary test-sample-qr-btn" data-type="non_url">
+                        <i class="bi bi-play-circle me-1"></i> Test This QR
+                    </button>
+                    <a href="{{ url_for('serve_sample_qrs', filename='demo_non_url_qr.png') }}" download class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Custom QR Code Image -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100">
+            <h5 class="text-light fw-bold mb-3"><i class="bi bi-upload text-info me-2"></i>Upload QR Code Image</h5>
+            <form id="qrUploadForm" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="qrFile" class="form-label text-light small fw-semibold">Select PNG, JPG, or WEBP QR Image:</label>
+                    <input class="form-control bg-dark text-light border-secondary" type="file" id="qrFile" accept="image/*" required>
+                </div>
+                <button type="submit" id="uploadBtn" class="btn btn-cyber-primary w-100">
+                    <i class="bi bi-upc-scan me-2"></i> Decode &amp; Analyze QR
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quishing Defense Educational Note -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100">
+            <h5 class="text-light fw-bold mb-3"><i class="bi bi-shield-slash text-warning me-2"></i>What is "Quishing"?</h5>
+            <p class="text-muted small mb-2">
+                <strong>QR Phishing (Quishing)</strong> occurs when adversaries overlay malicious QR stickers on physical flyers, parking meters, or campus dining tables to bypass traditional email spam filters.
+            </p>
+            <p class="text-muted small mb-0">
+                CYBERGUARD inspects the embedded string safely inside an isolated memory buffer, checks for homoglyphs, IP addresses, and malicious URI schemes (<code>javascript:</code>, <code>data:</code>), and strictly prevents automatic browser redirection.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic Result Card -->
+<div id="qrResultCard" class="cyber-card p-4 mb-4 d-none">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h4 class="text-light fw-bold mb-0"><i class="bi bi-check2-circle text-success me-2"></i>Decoded Payload Details</h4>
+        <span id="qrRiskBadge" class="badge fs-6 px-3 py-2">EVALUATING</span>
+    </div>
+
+    <div class="row g-4 mb-3">
+        <div class="col-md-8">
+            <div class="small text-muted mb-1">Decoded Payload Content:</div>
+            <div class="code-box text-break fs-6" id="qrDecodedContent"></div>
+            <div class="small text-muted mt-1">Decoder Method: <span id="qrDecoderMethod" class="text-info">Native</span></div>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="small text-muted mb-1">Assessed Threat Level:</div>
+            <div class="fs-2 fw-bold text-light"><span id="qrRiskScore">0</span> / 100</div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <h6 class="text-warning fw-bold mb-2">Structural Findings:</h6>
+            <div id="qrFindingsList"></div>
+        </div>
+        <div class="col-md-6">
+            <h6 class="text-info fw-bold mb-2">Safety Advice:</h6>
+            <ul id="qrRecommendationsList" class="list-unstyled"></ul>
+        </div>
+    </div>
+</div>
+
+<!-- Scan Telemetry Table -->
+<div class="cyber-card">
+    <div class="cyber-card-header">
+        <span class="text-light"><i class="bi bi-clock-history text-info me-2"></i>Recent QR Scans Database</span>
+        <span class="badge bg-dark border border-secondary text-muted">Audited Scans</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-cyber mb-0">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>File</th>
+                    <th>Payload Type</th>
+                    <th>Risk Score</th>
+                    <th>Decoded Content</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scan in recent_scans %}
+                <tr>
+                    <td class="text-muted small">{{ scan.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td class="text-muted small"><code>{{ scan.file_name }}</code></td>
+                    <td>
+                        <span class="badge bg-{{ 'primary' if scan.is_url else 'secondary' }}">
+                            {{ 'URL LINK' if scan.is_url else 'TEXT / TOKEN' }}
+                        </span>
+                    </td>
+                    <td class="fw-bold">{{ scan.risk_score }} / 100</td>
+                    <td class="text-light small"><code>{{ scan.decoded_content[:80] }}{% if scan.decoded_content|length > 80 %}...{% endif %}</code></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-3">No QR scans recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/qr_scanner.js') }}"></script>
+{% endblock %}

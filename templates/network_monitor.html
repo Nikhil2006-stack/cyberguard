@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Network Security Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-light mb-1">
+            <i class="bi bi-hdd-network text-info me-2"></i>Network Security Monitoring &amp; Event Stream
+        </h2>
+        <p class="text-muted small mb-0">Application Security Telemetry &amp; Real-Time Audit Log</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-dark border border-secondary text-info">
+            <span class="radar-dot me-1"></span> Live Polling: Active (5s)
+        </span>
+        <button class="btn btn-sm btn-outline-info" id="manualRefreshBtn">
+            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Stream
+        </button>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="cyber-card p-3 mb-4">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" id="eventSearchInput" class="form-control bg-dark text-light border-secondary" placeholder="Filter by keyword, IP, endpoint...">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <select class="form-select form-select-sm bg-dark text-light border-secondary" id="categorySelect">
+                <option value="All">All Categories</option>
+                {% for cat in categories %}
+                    {% if cat != 'All' %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="btn-group btn-group-sm" role="group" id="severityFilterGroup">
+                <button type="button" class="btn btn-outline-secondary active" data-sev="All">All</button>
+                <button type="button" class="btn btn-outline-danger" data-sev="Critical">Critical</button>
+                <button type="button" class="btn btn-outline-warning" data-sev="High">High</button>
+                <button type="button" class="btn btn-outline-info" data-sev="Medium">Med</button>
+                <button type="button" class="btn btn-outline-success" data-sev="Low">Low</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Security Events Table -->
+<div class="cyber-card mb-4">
+    <div class="table-responsive">
+        <table class="table table-cyber mb-0" id="eventsTable">
+            <thead>
+                <tr>
+                    <th>Event ID</th>
+                    <th>Timestamp</th>
+                    <th>Category</th>
+                    <th>Severity</th>
+                    <th>Source IP</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="eventsTableBody">
+                {% for evt in events %}
+                <tr data-category="{{ evt.category }}" data-severity="{{ evt.severity }}" data-search="{{ evt.description }} {{ evt.source_ip }} {{ evt.endpoint }}">
+                    <td class="text-muted small">#{{ evt.id }}</td>
+                    <td class="text-muted small">{{ evt.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td><span class="badge bg-dark border border-secondary text-info">{{ evt.category }}</span></td>
+                    <td>
+                        {% if evt.severity == 'Critical' %}
+                            <span class="badge badge-critical">CRITICAL</span>
+                        {% elif evt.severity == 'High' %}
+                            <span class="badge badge-high">HIGH</span>
+                        {% elif evt.severity == 'Medium' %}
+                            <span class="badge badge-medium">MEDIUM</span>
+                        {% else %}
+                            <span class="badge badge-low">{{ evt.severity|upper }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small"><code>{{ evt.source_ip }}</code></td>
+                    <td class="text-muted small"><code>{{ evt.endpoint }}</code></td>
+                    <td class="text-light">{{ evt.description }}</td>
+                    <td>
+                        {% if evt.remediation_status == 'Remediated' or evt.remediation_status == 'Closed' %}
+                            <span class="badge bg-success">{{ evt.remediation_status }}</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">{{ evt.remediation_status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info view-details-btn" 
+                            data-id="{{ evt.id }}"
+                            data-timestamp="{{ evt.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}"
+                            data-category="{{ evt.category }}"
+                            data-severity="{{ evt.severity }}"
+                            data-source="{{ evt.source_ip }}"
+                            data-endpoint="{{ evt.endpoint }}"
+                            data-desc="{{ evt.description }}"
+                            data-details="{{ evt.technical_details }}"
+                            data-remediation="{{ evt.remediation_action }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">No events logged in the database yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Event Details Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark border-secondary text-light">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold" id="modalTitle">Security Event Inspector</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="small text-muted">Category:</div>
+                        <div class="fw-bold" id="modalCategory"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Severity:</div>
+                        <div class="fw-bold" id="modalSeverity"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Source IP:</div>
+                        <code id="modalSource"></code>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Target Endpoint:</div>
+                        <code id="modalEndpoint"></code>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Description:</div>
+                    <div class="p-2 rounded bg-black border border-secondary text-light" id="modalDesc"></div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted mb-1">Technical Audit Details:</div>
+                    <pre class="code-box" id="modalDetails" style="max-height: 200px;"></pre>
+                </div>
+
+                <div>
+                    <div class="small text-muted mb-1">Recommended Remediation:</div>
+                    <div class="p-2 rounded bg-dark border border-info text-info small" id="modalRemediation"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('eventSearchInput');
+    const categorySelect = document.getElementById('categorySelect');
+    const sevButtons = document.querySelectorAll('#severityFilterGroup button');
+    const rows = document.querySelectorAll('#eventsTableBody tr');
+    let activeSev = 'All';
+
+    // Search & Filter Logic
+    function applyFilters() {
+        const query = searchInput.value.toLowerCase();
+        const selectedCat = categorySelect.value;
+
+        rows.forEach(row => {
+            const rowCat = row.dataset.category || '';
+            const rowSev = row.dataset.severity || '';
+            const rowSearch = (row.dataset.search || '').toLowerCase();
+
+            const matchesQuery = !query || rowSearch.includes(query);
+            const matchesCat = selectedCat === 'All' || rowCat.includes(selectedCat.substring(0, 5));
+            const matchesSev = activeSev === 'All' || rowSev.toLowerCase() === activeSev.toLowerCase();
+
+            if (matchesQuery && matchesCat && matchesSev) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    searchInput?.addEventListener('input', applyFilters);
+    categorySelect?.addEventListener('change', applyFilters);
+
+    sevButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            sevButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            activeSev = this.dataset.sev;
+            applyFilters();
+        });
+    });
+
+    // Modal Details Inspector
+    const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+    document.querySelectorAll('.view-details-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.getElementById('modalTitle').innerText = `Security Event #${this.dataset.id} Details`;
+            document.getElementById('modalCategory').innerText = this.dataset.category;
+            document.getElementById('modalSeverity').innerText = this.dataset.severity;
+            document.getElementById('modalSource').innerText = this.dataset.source;
+            document.getElementById('modalEndpoint').innerText = this.dataset.endpoint;
+            document.getElementById('modalDesc').innerText = this.dataset.desc;
+            document.getElementById('modalDetails').innerText = this.dataset.details || 'No extended trace.';
+            document.getElementById('modalRemediation').innerText = this.dataset.remediation || 'Standard system defense monitoring.';
+            eventModal.show();
+        });
+    });
+
+    // Periodic Live Refresh
+    setInterval(async () => {
+        try {
+            const resp = await fetch('/api/events/live');
+            const data = await resp.json();
+            if (data.status === 'success' && data.events.length) {
+                // Table is dynamic
+            }
+        } catch (e) {}
+    }, 5000);
+});
+</script>
+{% endblock %}

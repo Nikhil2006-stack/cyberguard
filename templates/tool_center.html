@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Security Tool Centre{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-light mb-1">
+            <i class="bi bi-tools text-primary me-2"></i>Security Tool Centre &amp; Lab Integration
+        </h2>
+        <p class="text-muted small mb-0">Professional Penetration Testing, DAST, Network Sniffing &amp; Port Scanning Tools</p>
+    </div>
+    <span class="badge bg-dark border border-secondary text-info">
+        <i class="bi bi-shield-check me-1"></i> Authorized Lab Environment
+    </span>
+</div>
+
+<!-- Live Local Socket Verification Bar -->
+<div class="cyber-card p-3 mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3">
+                <span class="radar-dot"></span>
+                <div>
+                    <strong class="text-light">CYBERGUARD Target Server:</strong>
+                    <code class="text-info ms-2">http://127.0.0.1:5000</code>
+                    <span class="badge bg-success ms-2">{{ port_check.status }}</span>
+                </div>
+            </div>
+            <div class="small text-muted mt-1">Host IP on Classroom Network: <code>http://{{ host_ip }}:5000</code></div>
+        </div>
+        <div class="col-md-4 text-md-end mt-2 mt-md-0">
+            <button class="btn btn-sm btn-outline-info" onclick="checkLocalPort();">
+                <i class="bi bi-arrow-repeat me-1"></i> Test Target Port 5000
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 5 Professional Security Tools Cards -->
+<div class="row g-4 mb-4">
+    <!-- TOOL 1: BURP SUITE -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-light mb-0">
+                    <i class="bi bi-arrow-left-right text-warning me-2"></i>{{ tool_statuses.burp.name }}
+                </h5>
+                <span class="badge bg-{{ tool_statuses.burp.status_color }}">{{ tool_statuses.burp.status_label }}</span>
+            </div>
+            <div class="small text-info fw-semibold mb-2">{{ tool_statuses.burp.role }}</div>
+            <p class="small text-muted mb-3">{{ tool_statuses.burp.details }}</p>
+
+            <h6 class="small text-light fw-bold mb-2">Step-by-Step Lab Demonstration Walkthrough:</h6>
+            <ol class="small text-muted ps-3 mb-3">
+                {% for step in tool_statuses.burp.quick_guide %}
+                    <li class="mb-1">{{ step }}</li>
+                {% endfor %}
+            </ol>
+            <div class="mt-auto pt-2 border-top border-secondary">
+                <a href="{{ url_for('penetration_lab.lab_home') }}" class="btn btn-sm btn-outline-warning w-100">
+                    Launch IDOR Lab for Burp Interception <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOOL 2: OWASP ZAP -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-light mb-0">
+                    <i class="bi bi-shield-shaded text-primary me-2"></i>{{ tool_statuses.zap.name }}
+                </h5>
+                <span class="badge bg-{{ tool_statuses.zap.status_color }}">{{ tool_statuses.zap.status_label }}</span>
+            </div>
+            <div class="small text-info fw-semibold mb-2">{{ tool_statuses.zap.role }}</div>
+            <p class="small text-muted mb-3">{{ tool_statuses.zap.details }}</p>
+
+            <h6 class="small text-light fw-bold mb-2">Step-by-Step Automated Scan Walkthrough:</h6>
+            <ol class="small text-muted ps-3 mb-3">
+                {% for step in tool_statuses.zap.quick_guide %}
+                    <li class="mb-1">{{ step }}</li>
+                {% endfor %}
+            </ol>
+            <div class="mt-auto pt-2 border-top border-secondary">
+                <span class="small text-muted">Scan Target: <code>http://127.0.0.1:5000</code></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOOL 3: WIRESHARK -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-light mb-0">
+                    <i class="bi bi-reception-4 text-info me-2"></i>{{ tool_statuses.wireshark.name }}
+                </h5>
+                <span class="badge bg-{{ tool_statuses.wireshark.status_color }}">{{ tool_statuses.wireshark.status_label }}</span>
+            </div>
+            <div class="small text-info fw-semibold mb-2">{{ tool_statuses.wireshark.role }}</div>
+            <p class="small text-muted mb-3">{{ tool_statuses.wireshark.details }}</p>
+
+            <h6 class="small text-light fw-bold mb-2">Classroom Packet Sniffing Walkthrough:</h6>
+            <ol class="small text-muted ps-3 mb-3">
+                {% for step in tool_statuses.wireshark.quick_guide %}
+                    <li class="mb-1">{{ step }}</li>
+                {% endfor %}
+            </ol>
+            <div class="mt-auto pt-2 border-top border-secondary">
+                <span class="small text-muted">Recommended Filter: <code>tcp.port == 5000 || http</code></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOOL 4: NMAP -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-light mb-0">
+                    <i class="bi bi-compass text-danger me-2"></i>{{ tool_statuses.nmap.name }}
+                </h5>
+                <span class="badge bg-{{ tool_statuses.nmap.status_color }}">{{ tool_statuses.nmap.status_label }}</span>
+            </div>
+            <div class="small text-info fw-semibold mb-2">{{ tool_statuses.nmap.role }}</div>
+            <p class="small text-muted mb-3">{{ tool_statuses.nmap.details }}</p>
+
+            <h6 class="small text-light fw-bold mb-2">Authorized Localhost Scan Walkthrough:</h6>
+            <ol class="small text-muted ps-3 mb-3">
+                {% for step in tool_statuses.nmap.quick_guide %}
+                    <li class="mb-1">{{ step }}</li>
+                {% endfor %}
+            </ol>
+            <div class="mt-auto pt-2 border-top border-secondary">
+                <span class="small text-muted">CLI Command: <code>nmap -sT -p 5000 127.0.0.1</code></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function checkLocalPort() {
+    try {
+        const resp = await fetch('/api/tools/port-check?port=5000');
+        const json = await resp.json();
+        alert(`Target Port Check (127.0.0.1:5000): ${json.result.status}`);
+    } catch (e) {
+        alert('Port check failed: ' + e.message);
+    }
+}
+</script>
+{% endblock %}

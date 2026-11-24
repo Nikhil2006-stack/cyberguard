@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}AI Security Analyst{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-light mb-1">
+            <i class="bi bi-cpu text-info me-2"></i>Explainable AI Security Analyst
+        </h2>
+        <p class="text-muted small mb-0">Multi-Vector Threat Correlation, Root Cause Diagnostics &amp; Patch Verification</p>
+    </div>
+    <span class="badge bg-dark border border-info text-info">
+        <i class="bi bi-robot me-1"></i> Autonomous Reasoning Engine
+    </span>
+</div>
+
+<!-- Executive Defense Posture Bar -->
+<div class="cyber-card p-4 mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h5 class="text-light fw-bold mb-1"><i class="bi bi-activity text-info me-2"></i>Active Security Assessment Summary</h5>
+            <p class="text-muted small mb-0">
+                The AI Security Analyst aggregates telemetry across the Student Portal IDOR lab, Phishing analysis engine, and QR scanner to formulate an explainable threat assessment.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <div class="d-inline-block text-start">
+                <span class="badge bg-{{ posture.color }} fs-5 px-3 py-2">Posture Grade {{ posture.grade }} ({{ posture.score }}%)</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Identified Laboratory Findings & Root-Cause Analysis -->
+<div class="cyber-card p-4 mb-4">
+    <div class="cyber-card-header mb-3">
+        <span class="text-light fw-bold"><i class="bi bi-shield-exclamation text-danger me-2"></i>Vulnerability Findings &amp; Remediation Analysis</span>
+        <span class="badge bg-dark border border-secondary text-muted">Audited Laboratory Findings</span>
+    </div>
+
+    {% for vuln in vulnerabilities %}
+    <div class="p-3 mb-4 rounded bg-dark border border-secondary">
+        <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+            <div>
+                <h5 class="text-light fw-bold mb-1">{{ vuln.title }}</h5>
+                <span class="badge bg-danger me-2">{{ vuln.severity|upper }} SEVERITY</span>
+                <span class="badge bg-secondary me-2">{{ vuln.cwe_id }}</span>
+                <code class="text-info">{{ vuln.endpoint }}</code>
+            </div>
+            <div>
+                {% if vuln.is_remediated %}
+                    <span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i> REMEDIATED</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark fs-6"><i class="bi bi-exclamation-triangle me-1"></i> ACTIVE LAB VULNERABILITY</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-6">
+                <div class="small text-info fw-bold mb-1"><i class="bi bi-search me-1"></i> Root Cause:</div>
+                <p class="small text-muted mb-2">{{ vuln.description }}</p>
+                
+                <div class="small text-danger fw-bold mb-1"><i class="bi bi-radioactive me-1"></i> Potential Security Impact:</div>
+                <p class="small text-muted mb-0">{{ vuln.impact }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <div class="small text-success fw-bold mb-1"><i class="bi bi-patch-check me-1"></i> Recommended Engineering Fix:</div>
+                <p class="small text-muted mb-2">{{ vuln.remediation_guide }}</p>
+
+                <div class="small text-warning fw-bold mb-1"><i class="bi bi-arrow-repeat me-1"></i> Verification &amp; Retesting Instructions:</div>
+                <p class="small text-muted mb-0">{{ vuln.reproduction_steps }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Multi-Stage Attack Correlation Matrix -->
+<div class="cyber-card p-4 mb-4">
+    <div class="cyber-card-header mb-3">
+        <span class="text-light fw-bold"><i class="bi bi-diagram-3 text-info me-2"></i>Multi-Stage Attack Chain Correlation</span>
+        <span class="badge bg-dark border border-secondary text-muted">Kill Chain Alignment</span>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="p-3 rounded bg-dark border border-info h-100">
+                <div class="badge bg-info text-dark mb-2">STAGE 1: RECON &amp; DELIVERY</div>
+                <h6 class="text-light fw-bold">Social Engineering / Quishing</h6>
+                <p class="small text-muted mb-0">
+                    Adversary sends urgent notification or places malicious QR code to redirect student to spoofed login.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="p-3 rounded bg-dark border border-warning h-100">
+                <div class="badge bg-warning text-dark mb-2">STAGE 2: CREDENTIAL THEFT</div>
+                <h6 class="text-light fw-bold">Fake Login Capture</h6>
+                <p class="small text-muted mb-0">
+                    Victim submits student credentials, granting attacker valid session cookies on the college network.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="p-3 rounded bg-dark border border-danger h-100">
+                <div class="badge bg-danger text-light mb-2">STAGE 3: HORIZONTAL IDOR</div>
+                <h6 class="text-light fw-bold">Object Level Exploitation</h6>
+                <p class="small text-muted mb-0">
+                    Attacker tampers with <code>profile_id</code> in Burp Suite to harvest entire student database without authorization.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

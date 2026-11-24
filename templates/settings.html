@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Settings & Classroom Mode{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-light mb-1">
+            <i class="bi bi-gear text-info me-2"></i>Platform Settings &amp; Classroom Setup
+        </h2>
+        <p class="text-muted small mb-0">Classroom Hotspot Configuration, Threat Intel Keys &amp; Database Reseeding</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Classroom Network Hotspot Card -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100">
+            <h5 class="text-light fw-bold mb-3"><i class="bi bi-wifi text-success me-2"></i>Classroom Hotspot Instructions</h5>
+            <p class="text-muted small mb-3">
+                To allow classmates to connect their phones or laptops during your presentation:
+            </p>
+            <ol class="small text-muted ps-3 mb-3">
+                <li class="mb-2"><strong class="text-light">Enable Mobile Hotspot:</strong> On the host Windows laptop, turn on "Mobile hotspot" in Windows Settings.</li>
+                <li class="mb-2"><strong class="text-light">Connect Classmates:</strong> Have students connect their phones/laptops to your hotspot SSID.</li>
+                <li class="mb-2"><strong class="text-light">Share Target URL:</strong> Direct classmates to enter this URL into their mobile browser:
+                    <div class="p-2 rounded bg-dark border border-info text-info fw-bold mt-1 text-center">
+                        http://{{ host_ip }}:5000
+                    </div>
+                </li>
+                <li class="mb-0"><strong class="text-light">Firewall Tip:</strong> If students cannot connect, ensure Windows Defender Firewall allows Python/Flask on Private Networks.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- API & Demonstration Controls -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100">
+            <h5 class="text-light fw-bold mb-3"><i class="bi bi-sliders text-info me-2"></i>Runtime Configuration</h5>
+            
+            <form id="settingsForm">
+                <div class="mb-3">
+                    <label for="vtApiKey" class="form-label text-light small fw-semibold">VirusTotal API Key (Optional):</label>
+                    <input type="text" class="form-control bg-dark text-light border-secondary" id="vtApiKey" value="{{ vt_key }}" placeholder="Paste VirusTotal API v3 key...">
+                    <div class="form-text text-muted small">Enables live 70+ scanner reputation queries in Phishing Detection.</div>
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input" type="checkbox" id="classroomModeCheck" {% if classroom_mode %}checked{% endif %}>
+                    <label class="form-check-label text-light small fw-semibold" for="classroomModeCheck">
+                        Live Classroom Demonstration Mode
+                    </label>
+                    <div class="form-text text-muted small">Optimizes session lifetime, enables quick persona switching, and shows classroom hotspot hints.</div>
+                </div>
+
+                <button type="submit" class="btn btn-cyber-primary w-100 mb-3" id="saveSettingsBtn">
+                    <i class="bi bi-save me-1"></i> Save Configuration
+                </button>
+            </form>
+
+            <hr class="border-secondary my-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-light fw-bold small">Reset Telemetry Database</div>
+                    <div class="text-muted small" style="font-size: 0.75rem;">Clears scans and resets to clean baseline.</div>
+                </div>
+                <button class="btn btn-sm btn-outline-danger" id="reseedDbBtn">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reseed DB
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('settingsForm')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const btn = document.getElementById('saveSettingsBtn');
+    btn.disabled = true;
+    try {
+        const resp = await fetch('/api/settings/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                vt_key: document.getElementById('vtApiKey').value,
+                classroom_mode: document.getElementById('classroomModeCheck').checked
+            })
+        });
+        const json = await resp.json();
+        alert(json.message || 'Saved!');
+        location.reload();
+    } catch (err) {
+        alert('Error saving settings: ' + err.message);
+    } finally {
+        btn.disabled = false;
+    }
+});
+
+document.getElementById('reseedDbBtn')?.addEventListener('click', async function () {
+    if (confirm('Are you sure you want to reset all telemetry and reload demo data?')) {
+        try {
+            const resp = await fetch('/api/settings/reseed', { method: 'POST' });
+            const json = await resp.json();
+            alert(json.message);
+            location.reload();
+        } catch (e) {
+            alert('Failed: ' + e.message);
+        }
+    }
+});
+</script>
+{% endblock %}

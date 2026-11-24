@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Penetration Testing Lab{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-light mb-1">
+            <i class="bi bi-bug-fill text-danger me-2"></i>Live Ethical Hacking &amp; Penetration Testing Lab
+        </h2>
+        <p class="text-muted small mb-0">CWE-639 / BOLA Insecure Direct Object Reference Demonstration &amp; Remediation</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        {% if idor_vuln and idor_vuln.is_remediated %}
+            <span class="badge bg-success fs-6 px-3 py-2"><i class="bi bi-shield-check me-1"></i> REMEDIATED &amp; VERIFIED</span>
+        {% else %}
+            <span class="badge bg-danger fs-6 px-3 py-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> ACTIVE LAB VULNERABILITY</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Active Account Persona Notice -->
+<div class="alert alert-dark border border-secondary p-3 mb-4 rounded d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <span class="text-muted small">Current Active Session:</span>
+        <strong class="text-info fs-5 ms-2">
+            {% if current_lab_user %}
+                {{ current_lab_user.username }} (User ID: {{ current_lab_user.id }})
+            {% else %}
+                Anonymous Guest (Not Logged In)
+            {% endif %}
+        </strong>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('penetration_lab.quick_switch_account', username='student_a') }}" class="btn btn-sm btn-outline-warning">
+            <i class="bi bi-person-fill me-1"></i> Switch to Student A (Attacker)
+        </a>
+        <a href="{{ url_for('penetration_lab.quick_switch_account', username='student_b') }}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-person-fill me-1"></i> Switch to Student B (Victim)
+        </a>
+    </div>
+</div>
+
+<!-- Side-by-Side Comparison: Scenario A vs Scenario B -->
+<div class="row g-4 mb-4">
+    <!-- SCENARIO A: VULNERABLE ENDPOINT -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100 border-danger">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-danger mb-0"><i class="bi bi-shield-x me-2"></i>Scenario A: Vulnerable Endpoint</h5>
+                <span class="badge bg-danger">NO AUTHORIZATION</span>
+            </div>
+            <p class="text-muted small mb-3">
+                Endpoint: <code>GET /lab/vulnerable/profile/&lt;profile_id&gt;</code><br>
+                The server accepts an arbitrary integer <code>profile_id</code> and dumps all private PII without checking if the session owns the profile!
+            </p>
+
+            <div class="p-3 bg-dark rounded border border-secondary mb-3">
+                <span class="small text-muted d-block mb-2">Simulate HTTP Request with 1-Click:</span>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-outline-light test-profile-btn" data-endpoint-type="vulnerable" data-profile-id="1">
+                        Request Profile #1 (Student A)
+                    </button>
+                    <button class="btn btn-sm btn-danger test-profile-btn" data-endpoint-type="vulnerable" data-profile-id="2">
+                        <i class="bi bi-bug me-1"></i> Tamper to Profile #2 (IDOR Exploit!)
+                    </button>
+                </div>
+            </div>
+
+            <div class="small text-muted">
+                <strong>Vulnerability:</strong> CWE-639 (Insecure Direct Object Reference) / OWASP API1:2023 (BOLA).
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENARIO B: SECURED ENDPOINT -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100 border-success">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-success mb-0"><i class="bi bi-shield-check me-2"></i>Scenario B: Secured Endpoint</h5>
+                <span class="badge bg-success">SERVER-SIDE VERIFIED</span>
+            </div>
+            <p class="text-muted small mb-3">
+                Endpoint: <code>GET /lab/secured/profile/&lt;profile_id&gt;</code><br>
+                Requires <code>@login_required</code> and enforces <code>if profile.user_id != current_user.id: return 403 Forbidden</code>.
+            </p>
+
+            <div class="p-3 bg-dark rounded border border-secondary mb-3">
+                <span class="small text-muted d-block mb-2">Simulate HTTP Request with 1-Click:</span>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-outline-light test-profile-btn" data-endpoint-type="secured" data-profile-id="1">
+                        Request Own Profile #1 (Allowed)
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger test-profile-btn" data-endpoint-type="secured" data-profile-id="2">
+                        <i class="bi bi-shield-slash me-1"></i> Probe Profile #2 (Blocked: 403)
+                    </button>
+                </div>
+            </div>
+
+            <div class="small text-muted">
+                <strong>Remediation:</strong> Cryptographically signed session ownership validation.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive HTTP Inspector Console -->
+<div class="cyber-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h5 class="text-light fw-bold mb-0">
+            <i class="bi bi-terminal-split text-info me-2"></i>Burp Suite Live HTTP Inspector Simulator
+        </h5>
+        <span id="responseStatusBadge" class="badge bg-secondary">AWAITING TEST DISPATCH</span>
+    </div>
+
+    <div class="row g-3">
+        <!-- Request Window -->
+        <div class="col-lg-6">
+            <div class="small text-muted mb-1"><i class="bi bi-arrow-up-right text-info me-1"></i> HTTP Request (Transmitted from Browser / Burp):</div>
+            <pre class="code-box" id="rawRequestDisplay" style="height: 220px;">Click any test button above to send a simulated HTTP request...</pre>
+        </div>
+
+        <!-- Response Window -->
+        <div class="col-lg-6">
+            <div class="small text-muted mb-1"><i class="bi bi-arrow-down-left text-success me-1"></i> HTTP Response (Returned from CYBERGUARD Backend):</div>
+            <pre class="code-box" id="rawResponseDisplay" style="height: 220px;">Server response will be rendered here...</pre>
+        </div>
+    </div>
+
+    <div id="testVerdictBox" class="d-none"></div>
+</div>
+
+<!-- Burp Suite Demonstration Steps & Code Comparison -->
+<div class="row g-4">
+    <!-- Burp Suite Steps -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100">
+            <h5 class="fw-bold text-light mb-3"><i class="bi bi-laptop text-info me-2"></i>Burp Suite Interception Walkthrough</h5>
+            <ol class="small text-muted ps-3 mb-0">
+                <li class="mb-2"><strong class="text-light">Start Proxy:</strong> Open Burp Suite Community Edition -> Proxy -> Intercept is on.</li>
+                <li class="mb-2"><strong class="text-light">Login as Student A:</strong> Navigate to CYBERGUARD and log in as <code>student_a</code> (Password: <code>student_a_pass</code>).</li>
+                <li class="mb-2"><strong class="text-light">Intercept Request:</strong> Click on your profile. Burp captures <code>GET /lab/vulnerable/profile/1 HTTP/1.1</code>.</li>
+                <li class="mb-2"><strong class="text-light">Send to Repeater:</strong> Press <kbd>Ctrl+R</kbd>. In Repeater, edit parameter <code>/profile/1</code> to <code>/profile/2</code>.</li>
+                <li class="mb-2"><strong class="text-light">Analyze Exploit:</strong> Hit Send. Observe that Student B's private phone number, emergency contact, and notes are disclosed.</li>
+                <li class="mb-0"><strong class="text-light">Verify Remediation:</strong> Change URL to <code>/lab/secured/profile/2</code> and hit Send. Observe HTTP 403 Forbidden.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Code Remediation Comparison -->
+    <div class="col-lg-6">
+        <div class="cyber-card p-4 h-100">
+            <h5 class="fw-bold text-light mb-3"><i class="bi bi-code-slash text-info me-2"></i>Source Code Remediation</h5>
+            <div class="small text-danger fw-bold mb-1">&#10008; VULNERABLE CODE (Missing Check):</div>
+            <pre class="code-box text-danger mb-3 p-2" style="font-size: 0.78rem;"># Defective: Trusts client profile_id blindly!
+@app.route('/lab/vulnerable/profile/&lt;int:profile_id&gt;')
+def vulnerable_profile(profile_id):
+    profile = StudentProfile.query.get(profile_id)
+    return jsonify(profile.to_dict(sensitive=True))</pre>
+
+            <div class="small text-success fw-bold mb-1">&#10004; SECURED CODE (Defense-in-Depth):</div>
+            <pre class="code-box text-success mb-0 p-2" style="font-size: 0.78rem;">@app.route('/lab/secured/profile/&lt;int:profile_id&gt;')
+@login_required
+def secured_profile(profile_id):
+    profile = StudentProfile.query.get(profile_id)
+    # Server-side ownership verification:
+    if profile.user_id != current_user.id and current_user.role != 'admin':
+        return jsonify({'error': '403 Forbidden'}), 403
+    return jsonify(profile.to_dict(sensitive=True))</pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/penetration_lab.js') }}"></script>
+{% endblock %}

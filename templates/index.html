@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Overview{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-lg-8">
+        <h1 class="display-6 fw-bold mb-1" style="background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            CYBERGUARD DEFENCE PLATFORM
+        </h1>
+        <p class="lead text-light mb-0">Think Like a Hacker. Defend Like a Professional.</p>
+        <p class="text-muted small">Live Ethical Hacking, AI-Assisted Threat Detection & Security Operations Centre (SOC)</p>
+    </div>
+    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <div class="cyber-card p-3 d-inline-block text-start">
+            <div class="small text-muted mb-1"><i class="bi bi-shield-shaded me-1"></i> System Posture Rating</div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-{{ posture.color }} fs-4 px-3 py-2">Grade {{ posture.grade }}</span>
+                <div>
+                    <div class="fw-bold fs-5 text-light">{{ posture.score }} / 100</div>
+                    <div class="small text-{{ posture.color }}">{{ posture.status }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Classroom Hotspot & Audience Participation Card -->
+<div class="alert alert-dark border border-info p-3 mb-4 rounded cyber-card">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h5 class="text-info mb-1"><i class="bi bi-broadcast-pin me-2"></i> Live Classroom Demonstration Setup</h5>
+            <p class="text-light small mb-1">
+                Classmates can connect their smartphones or laptops to the host's private Wi-Fi hotspot and access the live application:
+            </p>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge bg-dark border border-info text-info fs-6 px-3 py-2">
+                    http://{{ host_ip }}:5000
+                </span>
+                <a href="{{ url_for('qr_scanner_page') }}" class="btn btn-sm btn-outline-info">
+                    <i class="bi bi-qr-code me-1"></i> Scan Audience QR
+                </a>
+                <a href="{{ url_for('penetration_lab.lab_home') }}" class="btn btn-sm btn-cyber-primary">
+                    <i class="bi bi-play-circle-fill me-1"></i> Start IDOR Lab
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <span class="badge bg-secondary p-2"><i class="bi bi-laptop me-1"></i> Host Laptop: Active</span>
+            <span class="badge bg-success p-2 ms-1"><i class="bi bi-wifi me-1"></i> Hotspot: Ready</span>
+        </div>
+    </div>
+</div>
+
+<!-- Feature Modules Grid -->
+<div class="row g-4 mb-4">
+    <!-- Module 1: SOC Dashboard -->
+    <div class="col-md-6 col-xl-4">
+        <div class="cyber-card p-4 h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <i class="bi bi-speedometer2 text-info fs-2"></i>
+                <span class="badge bg-dark border border-secondary text-muted">Module 01</span>
+            </div>
+            <h5 class="fw-bold text-light">Security Operations Centre</h5>
+            <p class="text-muted small flex-grow-1">
+                Real-time situational awareness dashboard tracking authentic database security events, severity breakdown, and threat trends.
+            </p>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-info w-100">
+                Open SOC Dashboard <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 2: Phishing Detection -->
+    <div class="col-md-6 col-xl-4">
+        <div class="cyber-card p-4 h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <i class="bi bi-envelope-exclamation text-warning fs-2"></i>
+                <span class="badge bg-dark border border-secondary text-muted">Module 02</span>
+            </div>
+            <h5 class="fw-bold text-light">AI-Assisted Phishing Detection</h5>
+            <p class="text-muted small flex-grow-1">
+                Analyzes suspicious emails, text lures, and deceptive domains with an explainable 0–100 risk scoring algorithm and heuristic breakdown.
+            </p>
+            <a href="{{ url_for('phishing_page') }}" class="btn btn-sm btn-outline-warning w-100">
+                Launch Phishing Analyzer <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 3: QR Security Scanner -->
+    <div class="col-md-6 col-xl-4">
+        <div class="cyber-card p-4 h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <i class="bi bi-qr-code-scan text-success fs-2"></i>
+                <span class="badge bg-dark border border-secondary text-muted">Module 03</span>
+            </div>
+            <h5 class="fw-bold text-light">QR Code Security Scanner</h5>
+            <p class="text-muted small flex-grow-1">
+                Decodes and evaluates QR code payloads for Quishing (QR phishing), command injections, and malformed URLs without automatic execution.
+            </p>
+            <a href="{{ url_for('qr_scanner_page') }}" class="btn btn-sm btn-outline-success w-100">
+                Scan QR Payloads <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 4: Penetration Testing Lab -->
+    <div class="col-md-6 col-xl-4">
+        <div class="cyber-card p-4 h-100 d-flex flex-column border-info">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <i class="bi bi-bug-fill text-danger fs-2"></i>
+                <span class="badge bg-danger text-light">Core Ethical Hacking Lab</span>
+            </div>
+            <h5 class="fw-bold text-light">IDOR Penetration Testing Lab</h5>
+            <p class="text-muted small flex-grow-1">
+                Hands-on demonstration comparing deliberately vulnerable vs secured college student portal endpoints using Burp Suite Community Edition.
+            </p>
+            <a href="{{ url_for('penetration_lab.lab_home') }}" class="btn btn-sm btn-cyber-primary w-100">
+                Enter Penetration Lab <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 5: Security Tools Centre -->
+    <div class="col-md-6 col-xl-4">
+        <div class="cyber-card p-4 h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <i class="bi bi-tools text-primary fs-2"></i>
+                <span class="badge bg-dark border border-secondary text-muted">Module 05</span>
+            </div>
+            <h5 class="fw-bold text-light">Security Tool Centre</h5>
+            <p class="text-muted small flex-grow-1">
+                Step-by-step practical walk-throughs and genuine connectivity verification for Burp Suite, OWASP ZAP, Wireshark, Nmap, and VirusTotal.
+            </p>
+            <a href="{{ url_for('tool_center_page') }}" class="btn btn-sm btn-outline-primary w-100">
+                Inspect Security Tools <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 6: Reports & AI Analyst -->
+    <div class="col-md-6 col-xl-4">
+        <div class="cyber-card p-4 h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <i class="bi bi-file-earmark-bar-graph text-secondary fs-2"></i>
+                <span class="badge bg-dark border border-secondary text-muted">Module 08</span>
+            </div>
+            <h5 class="fw-bold text-light">Audit Report Generation</h5>
+            <p class="text-muted small flex-grow-1">
+                Produces formal cybersecurity evaluation reports complete with executive summaries, CWE citations, remediation verification, and PDF export.
+            </p>
+            <a href="{{ url_for('reports_page') }}" class="btn btn-sm btn-outline-light w-100">
+                View Audit Reports <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

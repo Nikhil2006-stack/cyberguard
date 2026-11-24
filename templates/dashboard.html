@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}SOC Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-light mb-1">
+            <i class="bi bi-speedometer2 text-info me-2"></i>Security Operations Centre (SOC)
+        </h2>
+        <p class="text-muted small mb-0">Live Telemetry &amp; Vulnerability Assessment Matrix</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary" onclick="location.reload();">
+            <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+        </button>
+        <a href="{{ url_for('penetration_lab.lab_home') }}" class="btn btn-sm btn-cyber-primary">
+            <i class="bi bi-bug me-1"></i> Test IDOR Lab
+        </a>
+    </div>
+</div>
+
+<!-- 4 Top Dynamic Metric Counters -->
+<div class="row g-3 mb-4">
+    <!-- Metric 1: Total Security Events -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="cyber-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold">TOTAL SECURITY EVENTS</span>
+                <i class="bi bi-activity text-info fs-5"></i>
+            </div>
+            <div class="metric-value text-info">{{ metrics.total_events }}</div>
+            <div class="small text-muted mt-1"><i class="bi bi-database me-1"></i> Recorded in Database</div>
+        </div>
+    </div>
+
+    <!-- Metric 2: Phishing Analyses -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="cyber-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold">PHISHING ANALYSES</span>
+                <i class="bi bi-envelope-exclamation text-warning fs-5"></i>
+            </div>
+            <div class="metric-value text-warning">{{ metrics.total_phishing }}</div>
+            <div class="small text-muted mt-1">
+                <span class="text-danger fw-bold">{{ metrics.suspicious_urls }}</span> Suspicious URLs flagged
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric 3: Vulnerabilities Discovered vs Fixed -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="cyber-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold">VULNERABILITIES (FOUND / FIXED)</span>
+                <i class="bi bi-shield-check text-success fs-5"></i>
+            </div>
+            <div class="d-flex align-items-baseline gap-2">
+                <span class="metric-value text-light">{{ metrics.vulnerabilities_discovered }}</span>
+                <span class="text-muted fs-4">/</span>
+                <span class="metric-value text-success">{{ metrics.vulnerabilities_fixed }}</span>
+            </div>
+            <div class="small text-muted mt-1">
+                {% if metrics.vulnerabilities_fixed == metrics.vulnerabilities_discovered and metrics.vulnerabilities_discovered > 0 %}
+                    <span class="text-success"><i class="bi bi-check-all"></i> All lab findings remediated</span>
+                {% else %}
+                    <span class="text-warning"><i class="bi bi-exclamation-triangle"></i> Active IDOR in lab</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric 4: Posture Score -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="cyber-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold">DEFENSIVE POSTURE</span>
+                <i class="bi bi-shield-shaded text-{{ posture.color }} fs-5"></i>
+            </div>
+            <div class="d-flex align-items-baseline gap-2">
+                <span class="metric-value text-{{ posture.color }}">{{ posture.score }}%</span>
+                <span class="badge bg-{{ posture.color }} px-2 py-1">Grade {{ posture.grade }}</span>
+            </div>
+            <div class="small text-{{ posture.color }} mt-1 text-truncate">{{ posture.status }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Charts Row -->
+<div class="row g-4 mb-4">
+    <!-- Doughnut Chart: Severity Breakdown -->
+    <div class="col-lg-5">
+        <div class="cyber-card h-100 p-3">
+            <div class="cyber-card-header mb-3">
+                <span class="text-light"><i class="bi bi-pie-chart-fill text-info me-2"></i>Severity Distribution</span>
+                <span class="badge bg-dark border border-secondary text-muted">All Events</span>
+            </div>
+            <div style="height: 250px; position: relative;">
+                <canvas id="severityChart"
+                    data-critical="{{ metrics.severity_distribution.Critical }}"
+                    data-high="{{ metrics.severity_distribution.High }}"
+                    data-medium="{{ metrics.severity_distribution.Medium }}"
+                    data-low="{{ metrics.severity_distribution.Low }}"
+                    data-info="{{ metrics.severity_distribution.Info }}">
+                </canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Line Chart: 7-Day Activity Trend -->
+    <div class="col-lg-7">
+        <div class="cyber-card h-100 p-3">
+            <div class="cyber-card-header mb-3">
+                <span class="text-light"><i class="bi bi-graph-up text-info me-2"></i>7-Day Security Event Trend</span>
+                <span class="badge bg-dark border border-secondary text-muted">Activity Rate</span>
+            </div>
+            <div style="height: 250px; position: relative;">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Security Activity Table -->
+<div class="cyber-card mb-4">
+    <div class="cyber-card-header">
+        <span class="text-light"><i class="bi bi-clock-history text-info me-2"></i>Recent Security Activity &amp; Penetration Testing Findings</span>
+        <a href="{{ url_for('network_monitor_page') }}" class="btn btn-sm btn-outline-info">View All Events</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-cyber mb-0">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Category</th>
+                    <th>Severity</th>
+                    <th>Source IP</th>
+                    <th>Description</th>
+                    <th>Remediation Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for evt in metrics.recent_events %}
+                <tr>
+                    <td class="text-muted small">{{ evt.timestamp }}</td>
+                    <td><span class="badge bg-dark border border-secondary text-info">{{ evt.category }}</span></td>
+                    <td>
+                        {% if evt.severity == 'Critical' %}
+                            <span class="badge badge-critical">CRITICAL</span>
+                        {% elif evt.severity == 'High' %}
+                            <span class="badge badge-high">HIGH</span>
+                        {% elif evt.severity == 'Medium' %}
+                            <span class="badge badge-medium">MEDIUM</span>
+                        {% else %}
+                            <span class="badge badge-low">{{ evt.severity|upper }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small"><code>{{ evt.source_ip }}</code></td>
+                    <td class="text-light">{{ evt.description }}</td>
+                    <td>
+                        {% if evt.remediation_status == 'Remediated' or evt.remediation_status == 'Closed' %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>{{ evt.remediation_status }}</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>{{ evt.remediation_status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No security events logged yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MITRE ATT&CK Matrix Card -->
+<div class="cyber-card p-3">
+    <div class="cyber-card-header mb-3">
+        <span class="text-light"><i class="bi bi-grid-3x3 text-info me-2"></i>MITRE ATT&CK&reg; Laboratory Mapping</span>
+        <span class="badge bg-dark border border-secondary text-muted">Framework Alignment</span>
+    </div>
+    <div class="row g-3">
+        {% for m in mitre %}
+        <div class="col-md-6 col-xl-3">
+            <div class="p-3 rounded bg-dark border border-secondary h-100">
+                <div class="text-info fw-bold small mb-1">{{ m.tactic }}</div>
+                <div class="text-light fw-bold mb-2">{{ m.technique }}</div>
+                <div class="text-muted small mb-2">{{ m.description }}</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top border-secondary">
+                    <span class="badge bg-primary">{{ m.status }}</span>
+                    <span class="small text-muted">{{ m.detected_events }} Events</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    window.dashboardTimelineData = {{ metrics.timeline|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

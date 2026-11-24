@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-6 col-lg-5 col-xl-4">
+        <div class="cyber-card p-4">
+            <div class="text-center mb-4">
+                <i class="bi bi-shield-lock-fill text-info fs-1"></i>
+                <h3 class="fw-bold text-light mt-2 mb-1">CYBERGUARD</h3>
+                <p class="text-muted small">Sign in to access security modules</p>
+            </div>
+
+            <!-- Classroom Demo Quick-Fill Credentials -->
+            <div class="p-3 mb-3 rounded bg-dark border border-secondary">
+                <span class="small text-muted d-block mb-2">Classroom 1-Click Credentials:</span>
+                <div class="d-flex flex-column gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-warning text-start quick-fill-btn" data-u="student_a" data-p="student_a_pass">
+                        <i class="bi bi-person me-1"></i> Student A (Attacker Persona)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger text-start quick-fill-btn" data-u="student_b" data-p="student_b_pass">
+                        <i class="bi bi-person me-1"></i> Student B (Victim Persona)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success text-start quick-fill-btn" data-u="admin" data-p="admin123">
+                        <i class="bi bi-shield-check me-1"></i> Administrator (SOC Lead)
+                    </button>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label text-light small fw-semibold">Username:</label>
+                    <input type="text" class="form-control bg-dark text-light border-secondary" id="username" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label text-light small fw-semibold">Password:</label>
+                    <input type="password" class="form-control bg-dark text-light border-secondary" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-cyber-primary w-100 py-2">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Authenticate
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.quick-fill-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.getElementById('username').value = this.dataset.u;
+        document.getElementById('password').value = this.dataset.p;
+    });
+});
+</script>
+{% endblock %}
